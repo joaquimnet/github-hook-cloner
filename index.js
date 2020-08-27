@@ -24,21 +24,23 @@ webhooks.on('*', async ({ id, name, payload }) => {
   const dirName = payload.repository.full_name.replace('/', '_');
   const cloneCmd = CLONE_COMMAND.replace('%repo', repoUrl).replace('%dir', dirName);
 
-  rimraf(path.join(BASE_DIR, dirName));
-
-  exec(cloneCmd, (error, stdout, stderr) => {
-    if (error) {
-      console.error('Could not execute clone command.');
-      console.error(error.message);
-      return;
-    }
-    if (stderr) {
-      console.error('stderr output:');
-      console.error(stderr);
-      return;
-    }
-    console.log(stdout);
-    console.log('Done!');
+  rimraf(path.join(BASE_DIR, dirName), err => {
+    console.error('failed to clean directory');
+    console.error(err);
+    exec(cloneCmd, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Could not execute clone command.');
+        console.error(error.message);
+        return;
+      }
+      if (stderr) {
+        console.error('stderr output:');
+        console.error(stderr);
+        return;
+      }
+      console.log(stdout);
+      console.log('Done!');
+    });
   });
 });
 
