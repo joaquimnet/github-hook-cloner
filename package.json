@@ -13,7 +13,6 @@
     "@octokit/webhooks": "^7.11.2",
     "express": "^4.17.1",
     "rimraf": "^3.0.2",
-    "simple-git": "^2.20.1",
     "tiny-env": "github:joaquimnet/tiny-env"
   }
 }
