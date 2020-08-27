@@ -34,11 +34,8 @@ webhooks.on('*', async ({ id, name, payload }) => {
       return;
     }
     if (stderr) {
-      console.error('stderr output:', '\n\n\n');
       console.error(stderr);
-      return;
     }
-    console.error('stdOUT output:', '\n\n\n');
     console.log(stdout);
     console.log('Done!');
   }
