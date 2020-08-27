@@ -16,30 +16,39 @@ const app = express();
 
 app.use(express.json());
 
+function cloneResultHandler(error, stdout, stderr) {
+  if (error) {
+    console.error('Could not execute clone command.');
+    console.error(error.message.replace(cloneCmd, '{{CLONE COMMAND}}'));
+    return;
+  }
+  if (stderr) {
+    console.error('stderr output:');
+    console.error(stderr);
+    return;
+  }
+  console.log(stdout);
+  console.log('Done!');
+}
+
 webhooks.on('*', async ({ id, name, payload }) => {
   console.log(name, 'event received for repo', payload.repository.full_name);
   if (name !== 'push') return;
 
-  const repoUrl = payload.repository.ssh_url;
+  const sshUrl = payload.repository.ssh_url;
+  const httpsUrl = payload.repository.clone_url;
   const dirName = payload.repository.full_name.replace('/', '_');
-  const cloneCmd = CLONE_COMMAND.replace('%repo', repoUrl).replace('%dir', dirName);
+  const cloneCmd = CLONE_COMMAND.replace('%repo', sshUrl).replace('%dir', dirName);
 
-  rimraf(path.join(BASE_DIR, dirName), err => {
+  rimraf(path.join(BASE_DIR, dirName), (err) => {
     console.error('failed to clean directory');
     console.error(err);
-    exec(cloneCmd, (error, stdout, stderr) => {
-      if (error) {
-        console.error('Could not execute clone command.');
-        console.error(error.message);
-        return;
+    exec(cloneCmd, (...result) => {
+      // ssh failed? retry with https
+      if (error && error.message.includes('ERROR: Repository not found.')) {
+        exec(CLONE_COMMAND.replace('%repo', httpsUrl).replace('%dir', dirName), cloneResultHandler);
       }
-      if (stderr) {
-        console.error('stderr output:');
-        console.error(stderr);
-        return;
-      }
-      console.log(stdout);
-      console.log('Done!');
+      cloneResultHandler(...result);
     });
   });
 });
