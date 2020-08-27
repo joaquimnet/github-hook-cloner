@@ -16,21 +16,6 @@ const app = express();
 
 app.use(express.json());
 
-function cloneResultHandler(error, stdout, stderr) {
-  if (error) {
-    console.error('Could not execute clone command.');
-    console.error(error.message.replace(cloneCmd, '{{CLONE COMMAND}}'));
-    return;
-  }
-  if (stderr) {
-    console.error('stderr output:');
-    console.error(stderr);
-    return;
-  }
-  console.log(stdout);
-  console.log('Done!');
-}
-
 webhooks.on('*', async ({ id, name, payload }) => {
   console.log(name, 'event received for repo', payload.repository.full_name);
   if (name !== 'push') return;
@@ -39,6 +24,21 @@ webhooks.on('*', async ({ id, name, payload }) => {
   const httpsUrl = payload.repository.clone_url;
   const dirName = payload.repository.full_name.replace('/', '_');
   const cloneCmd = CLONE_COMMAND.replace('%repo', sshUrl).replace('%dir', dirName);
+
+  function cloneResultHandler(error, stdout, stderr) {
+    if (error) {
+      console.error('Could not execute clone command.');
+      console.error(error.message.replace(cloneCmd, '{{CLONE COMMAND}}'));
+      return;
+    }
+    if (stderr) {
+      console.error('stderr output:');
+      console.error(stderr);
+      return;
+    }
+    console.log(stdout);
+    console.log('Done!');
+  }
 
   rimraf(path.join(BASE_DIR, dirName), (err) => {
     if (err) {
