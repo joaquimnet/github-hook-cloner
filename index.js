@@ -47,7 +47,10 @@ webhooks.on('*', async ({ id, name, payload }) => {
     }
     exec(cloneCmd, (...result) => {
       // ssh failed? retry with https
-      if (result.error && result.error.message.includes('ERROR: Repository not found.')) {
+      if (
+        (result.error && result.error.message.includes('ERROR: Repository not found.')) ||
+        (result.stderr && result.stderr.includes('ERROR: Repository not found.'))
+      ) {
         exec(CLONE_COMMAND.replace('%repo', httpsUrl).replace('%dir', dirName), cloneResultHandler);
         return;
       }
