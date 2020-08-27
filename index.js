@@ -41,8 +41,10 @@ webhooks.on('*', async ({ id, name, payload }) => {
   const cloneCmd = CLONE_COMMAND.replace('%repo', sshUrl).replace('%dir', dirName);
 
   rimraf(path.join(BASE_DIR, dirName), (err) => {
-    console.error('failed to clean directory');
-    console.error(err);
+    if (err) {
+      console.error('failed to clean directory');
+      console.error(err);
+    }
     exec(cloneCmd, (...result) => {
       // ssh failed? retry with https
       if (error && error.message.includes('ERROR: Repository not found.')) {
