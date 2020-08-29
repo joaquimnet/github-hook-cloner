@@ -5,6 +5,9 @@ const { Webhooks } = require('@octokit/webhooks');
 const { exec } = require('child_process');
 const path = require('path');
 
+console.log(`Github Hook Cloner v${require('./package.json').version}`);
+console.log(`Running on Node ${process.version}`);
+
 const { CLONE_COMMAND, BASE_DIR, GITHUB_HOOK_SECRET, PORT } = process.env;
 
 const webhooks = new Webhooks({
